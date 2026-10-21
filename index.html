@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PC BUILD LAB</title>
+<style>
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    background: #080d19;
+    color: white;
+    font-family: Arial, sans-serif;
+}
+
+header {
+    padding: 20px;
+    text-align: center;
+    background: #111c30;
+}
+
+h1 { color: #5eead4; }
+
+main {
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    gap: 20px;
+    padding: 20px;
+}
+
+.panel {
+    background: #111c30;
+    padding: 16px;
+    border-radius: 15px;
+}
+
+.part {
+    padding: 13px;
+    margin: 10px 0;
+    background: #243654;
+    border: 1px solid #466080;
+    border-radius: 10px;
+    cursor: grab;
+}
+
+.part:hover {
+    background: #34547a;
+}
+
+.part.done {
+    opacity: .4;
+    cursor: default;
+}
+
+.scene {
+    min-height: 560px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    perspective: 1000px;
+    overflow: hidden;
+    background: radial-gradient(
+        circle, #1c3454, #080d19 75%
+    );
+    border-radius: 18px;
+}
+
+.case {
+    position: relative;
+    width: 340px;
+    height: 460px;
+    background: linear-gradient(130deg,#263449,#0b1424);
+    border: 13px solid #475569;
+    border-radius: 18px;
+    box-shadow: 20px 25px 55px #0009;
+    transform-style: preserve-3d;
+    transition: transform .15s;
+}
+
+.case::after {
+    content: "";
+    position: absolute;
+    right: -28px;
+    top: 12px;
+    width: 15px;
+    height: 410px;
+    background: #29384b;
+    transform: rotateY(55deg);
+}
+
+.slot {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    font-size: 12px;
+    color: #b5c6df;
+    border: 2px dashed #64748b;
+    border-radius: 8px;
+    background: #172338;
+}
+
+.slot.ready {
+    border-color: #5eead4;
+    color: white;
+    background: #164e63;
+}
+
+#motherboard {
+    left: 35px;
+    top: 65px;
+    width: 245px;
+    height: 290px;
+}
+
+#cpu {
+    left: 115px;
+    top: 105px;
+    width: 65px;
+    height: 65px;
+}
+
+#ram {
+    left: 200px;
+    top: 95px;
+    width: 26px;
+    height: 120px;
+}
+
+#cooler {
+    left: 107px;
+    top: 100px;
+    width: 82px;
+    height: 82px;
+}
+
+#gpu {
+    left: 55px;
+    top: 270px;
+    width: 220px;
+    height: 55px;
+}
+
+#ssd {
+    left: 55px;
+    top: 365px;
+    width: 100px;
+    height: 35px;
+}
+
+#psu {
+    left: 180px;
+    top: 365px;
+    width: 100px;
+    height: 55px;
+}
+
+.screw {
+    position: absolute;
+    width: 19px;
+    height: 19px;
+    border-radius: 50%;
+    border: 2px solid #e2e8f0;
+    background: #64748b;
+    cursor: pointer;
+    display: none;
+}
+
+.screw::after {
+    content: "+";
+    position: absolute;
+    left: 3px;
+    top: -4px;
+    font-size: 20px;
+}
+
+.screw.fixed {
+    background: #22c55e;
+    transform: rotate(90deg);
+}
+
+#s1 { left: 20px; top: 45px; }
+#s2 { right: 20px; top: 45px; }
+#s3 { left: 20px; bottom: 65px; }
+#s4 { right: 20px; bottom: 65px; }
+
+.controls {
+    text-align: center;
+    padding: 15px;
+}
+
+button {
+    padding: 12px 18px;
+    margin: 5px;
+    background: #0d9488;
+    color: white;
+    border: 0;
+    border-radius: 9px;
+    cursor: pointer;
+}
+
+button:hover { background: #14b8a6; }
+
+#status {
+    padding: 15px;
+    text-align: center;
+    color: #5eead4;
+}
+
+@media(max-width:750px) {
+    main { grid-template-columns: 1fr; }
+    .scene { min-height: 520px; }
+}
+</style>
+</head>
+<body>
+
+<header>
+    <h1>🖥️ PC BUILD LAB</h1>
+    <p>Інтерактивний симулятор складання комп'ютера</p>
+</header>
+
+<main>
+    <aside class="panel">
+        <h2>Комплектуючі</h2>
+        <p>Перетягни деталь у корпус.</p>
+
+        <div class="part" draggable="true" data-id="motherboard">
+            🟩 Материнська плата
+        </div>
+        <div class="part" draggable="true" data-id="cpu">
+            🧠 Процесор
+        </div>
+        <div class="part" draggable="true" data-id="ram">
+            💾 128 ГБ DDR5
+        </div>
+        <div class="part" draggable="true" data-id="cooler">
+            🌀 Кулер
+        </div>
+        <div class="part" draggable="true" data-id="gpu">
+            🎮 Відеокарта
+        </div>
+        <div class="part" draggable="true" data-id="ssd">
+            💽 SSD 4 ТБ
+        </div>
+        <div class="part" draggable="true" data-id="psu">
+            ⚡ Блок живлення
+        </div>
+
+        <h3 id="progress">Прогрес: 0%</h3>
+    </aside>
+
+    <section>
+        <div class="scene">
+            <div class="case" id="pcCase">
+                <div class="slot" id="motherboard">Материнська плата</div>
+                <div class="slot" id="cpu">CPU</div>
+                <div class="slot" id="ram">RAM</div>
+                <div class="slot" id="cooler">Кулер</div>
+                <div class="slot" id="gpu">GPU</div>
+                <div class="slot" id="ssd">SSD</div>
+                <div class="slot" id="psu">PSU</div>
+
+                <div class="screw" id="s1"></div>
+                <div class="screw" id="s2"></div>
+                <div class="screw" id="s3"></div>
+                <div class="screw" id="s4"></div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button onclick="rotateCase(-20)">↶ Повернути</button>
+            <button onclick="rotateCase(20)">Повернути ↷</button>
+            <button onclick="resetGame()">🔄 Заново</button>
+        </div>
+
+        <div id="status">
+            Спочатку встанови материнську плату!
+        </div>
+    </section>
+</main>
+
+<script>
+const order = [
+    "motherboard",
+    "cpu",
+    "ram",
+    "cooler",
+    "gpu",
+    "ssd",
+    "psu"
+];
+
+const names = {
+    motherboard: "материнську плату",
+    cpu: "процесор",
+    ram: "оперативну пам'ять",
+    cooler: "кулер",
+    gpu: "відеокарту",
+    ssd: "SSD",
+    psu: "блок живлення"
+};
+
+let installed = [];
+let fixedScrews = 0;
+let angle = -12;
+
+const pcCase = document.getElementById("pcCase");
+const statusText = document.getElementById("status");
+
+function rotateCase(amount) {
+    angle += amount;
+    pcCase.style.transform =
+        `rotateY(${angle}deg) rotateX(5deg)`;
+}
+
+rotateCase(0);
+
+document.querySelectorAll(".part").forEach(part => {
+    part.addEventListener("dragstart", event => {
+        if (part.classList.contains("done")) {
+            event.preventDefault();
+            return;
+        }
+
+        event.dataTransfer.setData(
+            "text/plain",
+            part.dataset.id
+        );
+    });
+
+    part.addEventListener("click", () => {
+        if (!part.classList.contains("done")) {
+            installPart(part.dataset.id);
+        }
+    });
+});
+
+pcCase.addEventListener("dragover", event => {
+    event.preventDefault();
+});
+
+pcCase.addEventListener("drop", event => {
+    event.preventDefault();
+
+    const id = event.dataTransfer.getData("text/plain");
+    installPart(id);
+});
+
+function installPart(id) {
+    if (!order.includes(id) || installed.includes(id)) {
+        return;
+    }
+
+    const next = order[installed.length];
+
+    if (id !== next) {
+        statusText.textContent =
+            "⚠️ Спочатку встанови: " + names[next];
+        return;
+    }
+
+    installed.push(id);
+
+    const slot = document.getElementById(id);
+    slot.classList.add("ready");
+    slot.textContent = "✅ " + names[id];
+
+    const part = document.querySelector(
+        `.part[data-id="${id}"]`
+    );
+
+    part.classList.add("done");
+    part.draggable = false;
+
+    if (id === "cooler") {
+        document.getElementById("cpu").style.display = "none";
+    }
+
+    if (id === "motherboard") {
+        document.querySelectorAll(".screw").forEach(s => {
+            s.style.display = "block";
+        });
+    }
+
+    updateProgress();
+
+    if (installed.length === order.length) {
+        statusText.textContent =
+            fixedScrews === 4
+                ? "🏆 Комп'ютер повністю зібрано!"
+                : "🔩 Закрути всі чотири гвинти!";
+    } else {
+        statusText.textContent =
+            "✅ Встановлено! Далі: " +
+            names[order[installed.length]];
+    }
+}
+
+document.querySelectorAll(".screw").forEach(screw => {
+    screw.addEventListener("click", () => {
+        if (!installed.includes("motherboard")) return;
+        if (screw.classList.contains("fixed")) return;
+
+        screw.classList.add("fixed");
+        fixedScrews++;
+
+        updateProgress();
+
+        if (fixedScrews === 4) {
+            statusText.textContent =
+                installed.length === order.length
+                    ? "🏆 Комп'ютер повністю зібрано!"
+                    : "🔩 Усі гвинти закручено!";
+        }
+    });
+});
+
+function updateProgress() {
+    const completed = installed.length + fixedScrews;
+    const total = order.length + 4;
+
+    document.getElementById("progress").textContent =
+        "Прогрес: " +
+        Math.round(completed / total * 100) + "%";
+}
+
+function resetGame() {
+    installed = [];
+    fixedScrews = 0;
+    angle = -12;
+
+    document.querySelectorAll(".slot").forEach(slot => {
+        slot.classList.remove("ready");
+        slot.style.display = "";
+    });
+
+    document.querySelectorAll(".part").forEach(part => {
+        part.classList.remove("done");
+        part.draggable = true;
+    });
+
+    document.querySelectorAll(".screw").forEach(screw => {
+        screw.classList.remove("fixed");
+        screw.style.display = "none";
+    });
+
+    document.getElementById("motherboard").textContent =
+        "Материнська плата";
+    document.getElementById("cpu").textContent = "CPU";
+    document.getElementById("ram").textContent = "RAM";
+    document.getElementById("cooler").textContent = "Кулер";
+    document.getElementById("gpu").textContent = "GPU";
+    document.getElementById("ssd").textContent = "SSD";
+    document.getElementById("psu").textContent = "PSU";
+
+    statusText.textContent =
+        "Спочатку встанови материнську плату!";
+
+    rotateCase(0);
+    updateProgress();
+}
+</script>
+
+</body>
+</html>
